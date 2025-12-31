@@ -497,6 +497,52 @@ const App = () => {
 
                <div className="h-px bg-slate-800 my-4"></div>
 
+               {/* Gerador por Soma Específica */}
+               <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-lg border border-purple-500/30">
+                  <h3 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Calculator size={14} />
+                    Gerador por Soma Específica
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mb-3">
+                    Digite uma soma e gere os 6 números que mais apareceram em jogos com essa soma
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min="21"
+                      max="345"
+                      value={targetSum}
+                      onChange={(e) => setTargetSum(e.target.value)}
+                      placeholder="Ex: 184"
+                      className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    />
+                    <button
+                      onClick={generateNumbersBySum}
+                      disabled={!targetSum || isGeneratingBySum || loadingHistory}
+                      className="bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold px-4 py-2 rounded-lg transition-all active:scale-95 flex items-center gap-2 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingBySum ? (
+                        <>
+                          <RotateCcw className="animate-spin" size={16} />
+                          Gerando...
+                        </>
+                      ) : (
+                        <>
+                          <TrendingUp size={16} />
+                          Gerar
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {targetSum && (
+                    <p className="text-[9px] text-slate-500 mt-2">
+                      Soma desejada: <strong className="text-purple-400">{targetSum}</strong> (ideal: 150-210)
+                    </p>
+                  )}
+               </div>
+
+               <div className="h-px bg-slate-800 my-4"></div>
+
                {/* Filtros para Gerador Automático */}
                <div className="opacity-75 hover:opacity-100 transition-opacity">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Filtros do Gerador Automático</h3>
