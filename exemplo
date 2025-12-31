@@ -18,8 +18,7 @@ import {
   TrendingUp,
   DownloadCloud,
   Trash2,
-  MousePointerClick,
-  X
+  MousePointerClick
 } from 'lucide-react';
 
 // Constantes do Jogo
@@ -43,10 +42,6 @@ const App = () => {
   // Estados para Último Sorteio (API Real)
   const [latestDraw, setLatestDraw] = useState(null);
   const [loadingReal, setLoadingReal] = useState(false);
-
-  // Estado para Modal de Análise de Soma
-  const [selectedSum, setSelectedSum] = useState(null);
-  const [sumAnalysis, setSumAnalysis] = useState(null);
 
   // --- 1. Inicialização e Download de Dados ---
 
@@ -269,52 +264,7 @@ const App = () => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
-  // Função para analisar números mais frequentes em uma soma específica
-  const analyzeSumNumbers = (targetSum) => {
-    if (!history || history.length === 0) return null;
-
-    const numberFrequency = {};
-    let matchingDraws = 0;
-
-    // Inicializar contagem
-    for (let i = 1; i <= 60; i++) numberFrequency[i] = 0;
-
-    // Encontrar todos os sorteios com essa soma
-    history.forEach(draw => {
-      const dezenas = draw.dezenas.map(d => parseInt(d, 10));
-      const sum = dezenas.reduce((a, b) => a + b, 0);
-      
-      if (sum === targetSum) {
-        matchingDraws++;
-        dezenas.forEach(num => {
-          if (numberFrequency[num] !== undefined) {
-            numberFrequency[num]++;
-          }
-        });
-      }
-    });
-
-    // Converter para array e ordenar por frequência
-    const sortedNumbers = Object.entries(numberFrequency)
-      .map(([num, freq]) => ({ num: parseInt(num), freq }))
-      .filter(item => item.freq > 0)
-      .sort((a, b) => b.freq - a.freq);
-
-    return {
-      sum: targetSum,
-      matchingDraws,
-      numbers: sortedNumbers
-    };
-  };
-
-  // Handler para clicar em uma barra do gráfico
-  const handleBarClick = (sum) => {
-    const analysis = analyzeSumNumbers(sum);
-    setSumAnalysis(analysis);
-    setSelectedSum(sum);
-  };
-
-  // Renderização do gráfico de Histograma Real
+  // 1. Gráfico de Histograma Real (Soma)
   const renderRealHistogram = () => {
     if (!realStats) return (
       <div className="h-40 flex items-center justify-center text-slate-500 text-xs animate-pulse">
@@ -327,29 +277,19 @@ const App = () => {
     const endX = 280;
     const maxFreq = Math.max(...Object.values(realStats.sumFrequencies));
     
-    // Aumentar granularidade: passo de 3 para 1
-    for (let i = startX; i <= endX; i += 1) {
-      let freq = realStats.sumFrequencies[i] || 0;
-      let height = freq > 0 ? (freq / maxFreq) * 100 : 2; // Mínimo de 2% para barras visíveis
+    for (let i = startX; i <= endX; i += 3) {
+      let freq = (realStats.sumFrequencies[i] || 0) + (realStats.sumFrequencies[i+1] || 0) + (realStats.sumFrequencies[i+2] || 0);
+      let height = (freq / maxFreq) * 100;
       const isGoldenZone = i >= 150 && i <= 210;
-      const isSelected = selectedSum === i;
       
       bars.push(
         <div 
           key={i} 
-          onClick={() => handleBarClick(i)}
-          className={`flex-1 rounded-t-sm transition-all duration-300 relative group cursor-pointer hover:scale-105 ${
-            isSelected 
-              ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] z-20' 
-              : isGoldenZone 
-                ? 'bg-slate-600 hover:bg-slate-500' 
-                : 'bg-slate-800 hover:bg-slate-700'
-          }`}
-          style={{ height: `${Math.max(height * 0.4, 2)}%` }} 
-          title={`Clique para ver análise da soma ${i}`}
+          className={`flex-1 rounded-t-sm transition-all duration-700 relative group ${isGoldenZone ? 'bg-slate-600' : 'bg-slate-800'}`}
+          style={{ height: `${height * 0.4}%` }} 
         >
-           <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 bg-black text-white text-[9px] p-1 rounded z-50 whitespace-nowrap mb-1">
-             Soma {i}: {freq}x
+           <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 bg-black text-white text-[9px] p-1 rounded z-50 whitespace-nowrap">
+             Soma ~{i}: {freq}x
            </div>
         </div>
       );
@@ -357,7 +297,7 @@ const App = () => {
     return bars;
   };
 
-  // Gráfico de Espectro Numérico 1-60 (Frequência Individual)
+  // 2. Gráfico de Espectro Numérico 1-60 (Frequência Individual)
   const renderNumberSpectrum = () => {
     if (!realStats || !realStats.numberCounts) return null;
 
@@ -741,92 +681,6 @@ const App = () => {
           <p>© 2025 Mega Estrategista - Ciência de Dados</p>
         </div>
       </footer>
-
-      {/* Modal de Análise de Soma */}
-      {sumAnalysis && selectedSum && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => {
-            setSelectedSum(null);
-            setSumAnalysis(null);
-          }}
-        >
-          <div 
-            className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-black text-emerald-400 flex items-center gap-2">
-                  <BarChart3 size={24} />
-                  Análise da Soma {selectedSum}
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Números que mais apareceram em jogos com soma {selectedSum}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedSum(null);
-                  setSumAnalysis(null);
-                }}
-                className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-800 rounded-lg"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-              <p className="text-sm text-slate-300">
-                <strong className="text-emerald-400">{sumAnalysis.matchingDraws}</strong> sorteio(s) encontrado(s) com soma {selectedSum}
-              </p>
-            </div>
-
-            {sumAnalysis.numbers.length > 0 ? (
-              <div>
-                <h4 className="text-sm font-bold text-slate-300 mb-3">Números mais frequentes (ordenados por frequência):</h4>
-                <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
-                  {sumAnalysis.numbers.map((item, index) => {
-                    const isInCurrentBet = numbers.includes(item.num);
-                    return (
-                      <div
-                        key={item.num}
-                        className={`
-                          p-2 rounded-lg border-2 text-center transition-all
-                          ${isInCurrentBet
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                            : index < 10
-                              ? 'bg-slate-800 border-slate-600 text-slate-300'
-                              : 'bg-slate-800/50 border-slate-700 text-slate-500'
-                          }
-                        `}
-                      >
-                        <div className="text-xs font-bold">{String(item.num).padStart(2, '0')}</div>
-                        <div className={`text-[10px] mt-1 ${isInCurrentBet ? 'text-emerald-300' : 'text-slate-400'}`}>
-                          {item.freq}x
-                        </div>
-                        {isInCurrentBet && (
-                          <div className="text-[8px] text-emerald-400 mt-1">✓ Seu jogo</div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <p className="text-xs text-blue-300">
-                    <strong>Dica:</strong> Os números destacados em verde estão na sua aposta atual. 
-                    Considere incluir os números mais frequentes que ainda não selecionou.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p>Nenhum número encontrado para esta soma.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
