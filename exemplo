@@ -264,7 +264,7 @@ const App = () => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
-  // Renderização do gráfico de Histograma Real
+  // 1. Gráfico de Histograma Real (Soma)
   const renderRealHistogram = () => {
     if (!realStats) return (
       <div className="h-40 flex items-center justify-center text-slate-500 text-xs animate-pulse">
@@ -297,7 +297,7 @@ const App = () => {
     return bars;
   };
 
-  // Gráfico de Espectro Numérico 1-60 (Frequência Individual)
+  // 2. Gráfico de Espectro Numérico 1-60 (Frequência Individual)
   const renderNumberSpectrum = () => {
     if (!realStats || !realStats.numberCounts) return null;
 
