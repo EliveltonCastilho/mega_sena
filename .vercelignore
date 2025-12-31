@@ -1,0 +1,9 @@
+.next
+node_modules
+*.log
+app
+components
+lib
+public
+tsconfig.json
+next.config.*
